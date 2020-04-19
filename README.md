@@ -34,6 +34,30 @@
 `nmap -p 80,443 [ip] --script=wordpress*`
 
 
+### SMTP (25)
+`nmap –script smtp-commands,smtp-enum-users,smtp-vuln-cve2010-4344,smtp-vuln-cve2011-1720,smtp-vuln-cve2011-1764 -p 25 [ip]`
+
+`telnet [ip] 25`
+
+
+### Pop3 (110)
+`telnet [ip] 110`
+
+`USER [username]`
+
+`PASS [password]`
+
+`LIST`
+
+`RETR`
+
+`QUIT`
+
+
+### RPCBind (111)
+`rpcinfo -p [ip]
+
+
 ### SMB/Samba (139, 455)
 `nmap -p 139,445 [ip] --script=smb-enum*`
 
@@ -44,6 +68,10 @@
 `enum4linux -a [-u username] [-p password] [ip]`
 
 `smbmap [-u username] [-p password] [ip]`
+
+`smbclient -L \\\\[ip]\\[share]`
+
+`nmblookup -A [ip]`
 
 #### What we're looking for
 - Misconfigurations in permissions of shares (Null sessions or read and/or write access)
@@ -59,3 +87,13 @@ https://0xdf.gitlab.io/2018/12/02/pwk-notes-smb-enumeration-checklist-update1.ht
 
 ##### Hacking Articles SMB
 https://www.hackingarticles.in/a-little-guide-to-smb-enumeration/
+
+
+### SNMP (161)
+`snmpwalk -c public -v1 [ip]`
+
+`snmpcheck -t [ip] -c public`
+
+`onesixtyone -c names -i hosts`
+
+`snmpenum -t [ip]`

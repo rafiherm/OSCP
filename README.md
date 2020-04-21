@@ -172,6 +172,31 @@ Common problems are incorrect payload or return address
 
 ## File Transfer
 
+### tFTP
+`mkdir /tftp`
 
+`atftpd --daemon --port 69 /tftp`
+
+### FTP
+`apt-get update && apt-get install pure-ftpd`
+
+`./setup-ftp.sh`
+
+### VBS (Windows)
+
+
+### PowerShell
+
+
+### Linux
+
+
+### Debug
+
+## Password Cracking
+
+## Tunneling and Port Forwarding
 
 ## Privilege Escalation
+
+## Buffer Overflow

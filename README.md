@@ -296,11 +296,19 @@ Use /etc/passwd and /etc/shadow
 
 ### Rescources
 https://guif.re/windowseop
+
 https://sushant747.gitbooks.io/total-oscp-guide/post_exploitation.html
+
 https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite
+
 https://github.com/sagishahar/lpeworkshop/blob/master/Lab%20Exercises%20Walkthrough%20-%20Windows.pdf
+
 https://www.fuzzysecurity.com/tutorials/16.html
+
 https://gist.github.com/sckalath/8dacd032b65404ef7411
+
+https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
+
 Exploit Suggester scripts(kernel)
 
 ### Windows

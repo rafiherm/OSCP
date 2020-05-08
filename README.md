@@ -8,6 +8,8 @@ https://sushant747.gitbooks.io/total-oscp-guide/list_of_common_ports.html
 
 `unicornscan [ip]:1-65535`
 
+`nmap -A -Pn -vvvv -p- -oA outfile [ip]`
+
 
 ### UDP Scan
 `nmap [ip] -sU`
@@ -175,6 +177,12 @@ Common problems are incorrect payload or return address
 32-bit - `i686-w64-mingw32-gcc 40564.c -o 40564 -lws2_32`
 
 ## File Transfer
+
+### Netcat
+
+Sending - `nc -w 3 [destination] 1234 < out.file`
+
+Recieving - `nc -l -p 1234 > out.file`
 
 ### tFTP
 `mkdir /tftp`

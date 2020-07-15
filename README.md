@@ -112,6 +112,8 @@ https://www.hackingarticles.in/a-little-guide-to-smb-enumeration/
 
 ## Exploitation
 https://sushant747.gitbooks.io/total-oscp-guide/exploiting.html
+http://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet
+https://www.acunetix.com/blog/web-security-zone/what-is-reverse-shell/
 
 ### Shells
 
